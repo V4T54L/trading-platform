@@ -7,6 +7,7 @@ import (
 	"gotrade/order-service/internal/domain"
 	"gotrade/order-service/internal/repository"
 	"log"
+	"sort"
 	"strconv"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 type OrderUsecase interface {
 	PlaceOrder(ctx context.Context, userID int64, instrumentID int64, orderType domain.OrderType, side domain.OrderSide, price float64, quantity int) (*domain.Order, error)
 	CancelOrder(ctx context.Context, userID int64, orderID int64) (*domain.Order, error)
+	GetAllOrders(ctx context.Context, userID int64) ([]*domain.Order, error)
 	StartOutboxPolling(ctx context.Context)
 }
 
@@ -69,13 +71,10 @@ func (uc *orderUsecase) PlaceOrder(ctx context.Context, userID int64, instrument
 
 	// Update event with the actual order ID
 	event.AggregateID = strconv.FormatInt(order.ID, 10)
-	payload, _ = json.Marshal(order)
-	event.Payload = payload
+	finalPayload, _ := json.Marshal(order) // Re-marshal with updated ID
 
-	// This is a bit of a hack. The event in the DB will have the correct payload but AggregateID will be 0.
-	// A better approach would be to update the event in the same transaction, but that complicates the repo.
-	// For now, we publish the correct event immediately. The poller will handle the DB record.
-	go uc.publisher.Publish(context.Background(), "order_events", payload)
+	// Best-effort immediate publish. Outbox poller will ensure delivery.
+	go uc.publisher.Publish(context.Background(), "orders", finalPayload)
 
 	return order, nil
 }
@@ -96,15 +95,35 @@ func (uc *orderUsecase) CancelOrder(ctx context.Context, userID int64, orderID i
 		return order, nil // Return success even if publishing fails
 	}
 
-	go uc.publisher.Publish(context.Background(), "order_events", payload)
+	// For cancellations, we can publish directly as it's less critical than order creation
+	// and doesn't require the same level of transactional integrity for this MVP.
+	go uc.publisher.Publish(context.Background(), "orders", payload)
 
 	return order, nil
 }
 
+func (uc *orderUsecase) GetAllOrders(ctx context.Context, userID int64) ([]*domain.Order, error) {
+	openOrders, err := uc.repo.GetOpenOrdersByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	historyOrders, err := uc.repo.GetOrderHistoryByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	allOrders := append(openOrders, historyOrders...)
+	// Sort by creation time descending to be consistent
+	sort.Slice(allOrders, func(i, j int) bool {
+		return allOrders[i].CreatedAt.After(allOrders[j].CreatedAt)
+	})
+	return allOrders, nil
+}
+
 func (uc *orderUsecase) StartOutboxPolling(ctx context.Context) {
-	log.Println("Starting outbox poller...")
-	ticker := time.NewTicker(2 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
+
+	log.Println("Starting outbox poller...")
 
 	for {
 		select {
@@ -120,7 +139,7 @@ func (uc *orderUsecase) StartOutboxPolling(ctx context.Context) {
 func (uc *orderUsecase) pollAndPublish(ctx context.Context) {
 	tx, err := uc.dbPool.Begin(ctx)
 	if err != nil {
-		log.Printf("Error beginning transaction for outbox polling: %v", err)
+		log.Printf("Error starting transaction for outbox polling: %v", err)
 		return
 	}
 	defer tx.Rollback(ctx)
@@ -135,13 +154,13 @@ func (uc *orderUsecase) pollAndPublish(ctx context.Context) {
 		return
 	}
 
-	log.Printf("Polled %d events from outbox", len(events))
+	log.Printf("Found %d events in outbox to publish", len(events))
 
 	eventIDsToDelete := make([]string, 0, len(events))
 	for _, event := range events {
-		err := uc.publisher.Publish(ctx, "order_events", event.Payload)
+		err := uc.publisher.Publish(ctx, "orders", event.Payload)
 		if err != nil {
-			log.Printf("Failed to publish outbox event %s: %v. Will retry.", event.ID, err)
+			log.Printf("Error publishing event %s: %v. Will retry.", event.ID, err)
 			// Don't add to delete list, so it will be retried
 			continue
 		}

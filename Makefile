@@ -1,4 +1,4 @@
-.PHONY: all build up down restart logs test lint
+.PHONY: all build up down restart logs restart-service test lint
 
 # Variables
 DOCKER_COMPOSE = docker-compose
@@ -19,7 +19,7 @@ up:
 # Stop and remove all services
 down:
 	@echo "Stopping and removing all services..."
-	$(DOCKER_COMPOSE) down
+	$(DOCKER_COMPOSE) down -v
 
 # Restart all services
 restart: down up
@@ -37,11 +37,10 @@ restart-service:
 # Run tests (placeholder)
 test:
 	@echo "Running tests..."
-	# Example: go test ./...
+	@echo "No tests implemented yet."
 
 # Run linter (placeholder)
 lint:
 	@echo "Running linter..."
-	# Example: golangci-lint run
+	@echo "No linter configured yet."
 
-```
