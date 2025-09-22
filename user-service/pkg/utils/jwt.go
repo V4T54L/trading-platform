@@ -26,4 +26,3 @@ func ValidateJWT(tokenString string, secret string) (*jwt.Token, error) {
 		return []byte(secret), nil
 	})
 }
-```

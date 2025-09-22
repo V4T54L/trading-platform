@@ -12,10 +12,10 @@ import (
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
-	clients    map[*client.Client]bool
-	broadcast  chan []byte
-	register   chan *client.Client
-	unregister chan *client.Client
+	clients     map[*client.Client]bool
+	broadcast   chan []byte
+	register    chan *client.Client
+	unregister  chan *client.Client
 	redisClient *redis.Client
 }
 
@@ -32,10 +32,10 @@ func NewHub(redisAddr string) (*Hub, error) {
 	}
 
 	return &Hub{
-		broadcast:  make(chan []byte),
-		register:   make(chan *client.Client),
-		unregister: make(chan *client.Client),
-		clients:    make(map[*client.Client]bool),
+		broadcast:   make(chan []byte),
+		register:    make(chan *client.Client),
+		unregister:  make(chan *client.Client),
+		clients:     make(map[*client.Client]bool),
 		redisClient: rdb,
 	}, nil
 }
@@ -90,4 +90,3 @@ func (h *Hub) subscribeToRedis() {
 		h.broadcast <- []byte(msg.Payload)
 	}
 }
-```

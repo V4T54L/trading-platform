@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 
-	"gotrade/user-service/internal/domain"
 	"gotrade/user-service/internal/usecase"
 )
 
@@ -131,4 +130,3 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(user)
 }
-
