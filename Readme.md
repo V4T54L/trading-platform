@@ -1,38 +1,34 @@
 # GoTrade - A Golang Microservices Trading Platform
 
-GoTrade is a simplified, proof-of-concept trading platform built with a Golang microservices architecture. It aims to demonstrate core trading functionalities, clean architecture principles, and modern development practices within a containerized environment.
+GoTrade is a simplified, event-driven trading platform built with Golang microservices. It demonstrates key architectural patterns like Clean Architecture, Transactional Outbox, and real-time communication using WebSockets.
 
 ## Architecture
 
-The system is composed of several independent microservices that communicate via REST APIs and a Redis Pub/Sub system. An Nginx server acts as the API gateway, routing client requests to the appropriate backend service.
+The system is composed of several microservices that communicate via REST APIs and a Redis Pub/Sub system. An Nginx instance acts as an API Gateway, routing client requests to the appropriate backend service.
 
 ```
-+----------------+      +----------------+      +------------------------+
-|                |      |                |      |                        |
-|     Client     +------>      Nginx     +------>   Backend Services      |
-| (JS Frontend)  |      |  (API Gateway) |      | (Go Microservices)     |
-|                |      |                |      |                        |
-+----------------+      +----------------+      +-----------+------------+
-                                                            |
-                                                            |
-                                          +-----------------+-----------------+
-                                          |                 |                 |
-                                          v                 v                 v
-                                +-----------------+ +-----------------+ +---------------+
-                                |                 | |                 | |               |
-                                |  user-service   | | order-service   | | market-service|
-                                |                 | |                 | | (future)      |
-                                +-------+---------+ +-------+---------+ +---------------+
-                                        |                   |
-                                        |                   |
-                                        |  +----------------+----------------+
-                                        |  |                |                |
-                                        v  v                v                v
-                                +-----------------+ +-----------------+
-                                |                 | |                 |
-                                |   PostgreSQL    | |      Redis      |
-                                | (Transactional) | | (Pub/Sub, Cache)|
-                                +-----------------+ +-----------------+
++----------------+      +-----------------+      +------------------------+
+|                |      |                 |      |   Backend Services     |
+|     Client     +----->+   Nginx Gateway +----->+                        |
+| (JS/HTML/CSS)  |      |      (8080)     |      |   - user-service       |
+|                |      |                 |      |   - instrument-service |
++-------+--------+      +--------+--------+      |   - order-service      |
+        |                        |               |   - account-service    |
+        |                        |               +-----------+------------+
+        |                        |                           |
+        |                        |                           |
++-------v--------+      +--------v--------+      +-----------v------------+
+|                |      |                 |      |                        |
+| WebSocket GW   <------+      Redis      <------+      order-service     |
+| (Real-time)    |      |   (Pub/Sub)     |      |      (Publishes)       |
++----------------+      +-----------------+      +------------------------+
+                                                           |
+                                                           |
+                                                 +---------v---------+
+                                                 |                   |
+                                                 |    PostgreSQL     |
+                                                 | (Transactional DB)|
+                                                 +-------------------+
 ```
 
 ## Prerequisites
@@ -44,55 +40,60 @@ The system is composed of several independent microservices that communicate via
 ## Setup & Running
 
 1.  **Clone the repository:**
-    ```sh
+    ```bash
     git clone <repository-url>
     cd gotrade
     ```
 
-2.  **Create an environment file:**
-    Copy the `.env.example` to `.env` and customize if needed. The defaults are set up to work with the `docker-compose.yml` file.
+2.  **Environment Variables:**
+    Each service looks for a `.env` file in its root directory. For local development, create a single `.env` file in the project root.
+    ```bash
+    cp .env.example .env
+    ```
+    *Note: The `docker-compose.yml` file is configured to pass the root `.env` file to all services.*
 
 3.  **Start the application:**
-    This command will build the Docker images and start all the services in the background.
-    ```sh
+    This command will build the Docker images and start all services in detached mode.
+    ```bash
     make up
     ```
 
 4.  **Stop the application:**
-    This command will stop and remove all the containers, networks, and volumes.
-    ```sh
+    This command will stop and remove all containers, networks, and volumes.
+    ```bash
     make down
     ```
 
 ## Development Commands
 
-The `Makefile` provides several commands to streamline development:
-
 - `make build`: Build all service images.
 - `make up`: Build and start all services.
-- `make down`: Stop and remove all services and associated resources.
+- `make down`: Stop and remove all services and associated volumes.
 - `make restart`: A convenient shortcut for `make down && make up`.
 - `make logs`: Tail the logs from all running services.
-- `make restart-service service=<service_name>`: Restart a specific service (e.g., `make restart-service service=user-service`).
+- `make restart-service service=<service_name>`: Restart a specific service (e.g., `make restart-service service=order-service`).
 
 ## Service Descriptions
 
-- **Nginx**: The API gateway that routes incoming HTTP requests to the appropriate microservice.
-- **user-service**: Manages user registration, login, and profile data. It is responsible for issuing JWTs for authentication.
-- **instrument-service**: Provides information about tradable instruments (Equities, F&O). It includes a seeder to populate the database with initial data.
-- **order-service**: Handles the core trading logic, including placing and canceling orders. It uses a transactional outbox pattern to publish order events to Redis for real-time updates.
-- **market-service** (Future): Will be responsible for handling real-time market data feeds.
-- **PostgreSQL**: The primary relational database for persistent, transactional data like users, orders, and instruments.
-- **Redis**: Used for caching and as a real-time message broker (Pub/Sub) for events like order updates.
+- **Nginx**: Acts as the API Gateway, routing all incoming traffic from port `8080` to the appropriate backend service.
+- **user-service**: Manages user registration, login, and profile retrieval. It issues JWTs for authentication.
+- **instrument-service**: Provides a list of tradable instruments. It includes a one-off seeder to populate the database.
+- **order-service**: Handles order placement and cancellation. It uses the Transactional Outbox pattern to publish order events to Redis for real-time updates.
+- **account-service**: Manages user account balances and mock fund transfers (deposits/withdrawals).
+- **websocket-gateway**: Subscribes to Redis channels (e.g., for order events) and broadcasts messages to all connected WebSocket clients.
+- **PostgreSQL**: The primary transactional database for all services requiring persistent storage.
+- **Redis**: Used for caching and as a real-time message broker (Pub/Sub).
 
 ## API Documentation
 
-API documentation will be provided via Swagger/OpenAPI in a future update. For now, refer to the handler files in each service for endpoint definitions.
+Each service follows a RESTful API design. The primary endpoints are defined in the `main.go` file of each service.
 
-- **User Service**: `user-service/internal/handler/user_handler.go`
-- **Instrument Service**: `instrument-service/internal/handler/instrument_handler.go`
-- **Order Service**: `order-service/internal/handler/order_handler.go`
+- **User Service**: `/api/user/register`, `/api/user/login`, `/api/user/me`
+- **Instrument Service**: `/api/instruments/`
+- **Order Service**: `/api/orders/`
+- **Account Service**: `/api/account/`, `/api/account/transfer`
+- **WebSocket**: `/ws`
 
 ## Environment Variables
 
-Configuration is managed through environment variables. A `.env.example` file is provided as a template. When running `make up`, `docker-compose` automatically loads variables from a `.env` file in the project root.
+Configuration is managed through environment variables. See `.env.example` for a complete list of required variables.

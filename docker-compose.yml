@@ -3,41 +3,45 @@ version: '3.8'
 services:
   nginx:
     image: nginx:1.25-alpine
-    container_name: gotrade_nginx
+    container_name: gotrade-nginx
     ports:
       - "8080:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - gotrade-net
     depends_on:
       - user-service
       - instrument-service
       - order-service
-    networks:
-      - gotrade-net
+      - account-service
+      - websocket-gateway
 
   user-service:
     build:
       context: ./user-service
-    container_name: gotrade_user_service
+    container_name: gotrade-user-service
     ports:
       - "8081:8081"
+    env_file:
+      - .env
     environment:
       - APP_PORT=8081
-      - POSTGRES_URL=postgres://gotrade:password@postgres:5432/gotrade_db?sslmode=disable
-      - JWT_SECRET=a-very-secret-key-for-jwt-tokens
-    depends_on:
-      - postgres
     networks:
       - gotrade-net
+    depends_on:
+      - postgres
 
   instrument-service:
     build:
       context: ./instrument-service
+    container_name: gotrade-instrument-service
     ports:
       - "8082:8082"
+    env_file:
+      - .env
     environment:
       - APP_PORT=8082
-      - POSTGRES_URL=postgres://gotrade:password@postgres:5432/gotrade_db?sslmode=disable
     networks:
       - gotrade-net
     depends_on:
@@ -47,8 +51,9 @@ services:
     build:
       context: ./instrument-service
       dockerfile: scripts/seed/Dockerfile
-    environment:
-      - POSTGRES_URL=postgres://gotrade:password@postgres:5432/gotrade_db?sslmode=disable
+    container_name: gotrade-instrument-seeder
+    env_file:
+      - .env
     networks:
       - gotrade-net
     depends_on:
@@ -59,26 +64,56 @@ services:
   order-service:
     build:
       context: ./order-service
+    container_name: gotrade-order-service
     ports:
       - "8083:8083"
+    env_file:
+      - .env
     environment:
       - APP_PORT=8083
-      - POSTGRES_URL=postgres://gotrade:password@postgres:5432/gotrade_db?sslmode=disable
-      - REDIS_URL=redis:6379
-      - JWT_SECRET=a-very-secret-key-for-jwt-tokens
     networks:
       - gotrade-net
     depends_on:
       - postgres
       - redis
 
+  account-service:
+    build:
+      context: ./account-service
+    container_name: gotrade-account-service
+    ports:
+      - "8084:8084"
+    env_file:
+      - .env
+    environment:
+      - APP_PORT=8084
+    networks:
+      - gotrade-net
+    depends_on:
+      - postgres
+
+  websocket-gateway:
+    build:
+      context: ./websocket-gateway
+    container_name: gotrade-websocket-gateway
+    ports:
+      - "8085:8085"
+    env_file:
+      - .env
+    environment:
+      - APP_PORT=8085
+    networks:
+      - gotrade-net
+    depends_on:
+      - redis
+
   postgres:
     image: postgres:14-alpine
-    container_name: gotrade_postgres
+    container_name: gotrade-postgres
     environment:
-      - POSTGRES_USER=gotrade
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=gotrade_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -86,14 +121,14 @@ services:
     networks:
       - gotrade-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gotrade -d gotrade_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: gotrade_redis
+    container_name: gotrade-redis
     ports:
       - "6379:6379"
     networks:
