@@ -1,0 +1,21 @@
+github.com/go-chi/chi/v5 v5.0.12 h1:8n41s1s2V22A+dd6g2+2pW8r2JgD5VnBC2+V2yY22p4=
+github.com/go-chi/chi/v5 v5.0.12/go.mod h1:2IVN4K9f20xN2YZn582PAi9p22s2sY2aTrdG2BscgTM=
+github.com/golang-jwt/jwt/v5 v5.2.1 h1:s/pQjS2kCAn5d5l2Qf1s4I0i2v2r5uYg24vjSg5Qc+k=
+github.com/golang-jwt/jwt/v5 v5.2.1/go.mod h1:pRrFp/2T5Q+u8f2B2b87s5N3uwhpG5E8o+2Yj22aD94=
+github.com/jackc/pgpassfile v1.0.0 h1:t0GfLw8o1LzBv+lTfGkK1k2k+31a232YCt1M20iPCp4=
+github.com/jackc/pgpassfile v1.0.0/go.mod h1:L/v3q1OaHk1am5NO2yW3iJ+f0s1r+j22ETPAUjltbK4=
+github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a h1:tDRP+8CVYx2TEyB/3wTj0nIarvQZ3Tj41S25+e33J2Y=
+github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a/go.mod h1:OQjQj0iThsL5Qn+Zcv1LpWcdqB2s5Qv2q+v+cTjvk/U=
+github.com/jackc/pgx/v5 v5.5.5 h1:jW+hOBfQk+u0hA3z3Hqj0k2lOqUvYDbPjS2grkQWpAE=
+github.com/jackc/pgx/v5 v5.5.5/go.mod h1:yW+yFkHjSjXQcgnylrI0i2j+k/32t2i/tA/JvSHD2Y4=
+github.com/jackc/puddle/v2 v2.2.1 h1:5tVutLGvIgpTWRZ67j2+2CEiQ+QGZ4e2n9Ie2+pX2wI=
+github.com/jackc/puddle/v2 v2.2.1/go.mod h1:yKkQcZ+2sltxJmblXlXg1n2pPAfK2hZKOw1QfLg2LhQ=
+github.com/joho/godotenv v1.5.1 h1:G/2H5LzYkI0IS9d94+g43cFd3Z+BvOQL0I2Wb2p+8ZE=
+github.com/joho/godotenv v1.5.1/go.mod h1:Gj2HhT3nLhamBgaJp22mKj0nQe2Tj422T+1SBF203f0=
+golang.org/x/crypto v0.22.0 h1:1/4t4SXr8w22y2NJV2bC2l22sclP1N2oE+o+i2yvV4c=
+golang.org/x/crypto v0.22.0/go.mod h1:Mbe+lIm4iXyFfJj24I7p2V2I+Iag2/K1+sP/G3k2oAE=
+golang.org/x/sync v0.1.0 h1:1dMS353vdvJ883a3B8yK2t23s/2+9gTM9s5eZJ2DOsA=
+golang.org/x/sync v0.1.0/go.mod h1:RxMgewfAnx3fT3a62Ac57cADsN32aL3sPYIscv123A4=
+golang.org/x/text v0.14.0 h1:ScX5w1eTa3QqG87FARg2uTR3lU93nkMA+c+o3S2j9zI=
+golang.org/x/text v0.14.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/e0vjTMw24a1rY=
+
