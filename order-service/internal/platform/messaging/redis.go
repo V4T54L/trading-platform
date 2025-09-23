@@ -2,6 +2,7 @@ package messaging
 
 import (
 	"context"
+	"strings"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -11,6 +12,8 @@ type RedisPublisher struct {
 }
 
 func NewRedisPublisher(redisAddr string) (*RedisPublisher, error) {
+	redisAddr = strings.TrimPrefix(redisAddr, "redis://")
+
 	client := redis.NewClient(&redis.Options{
 		Addr: redisAddr,
 	})
@@ -29,4 +32,3 @@ func (p *RedisPublisher) Publish(ctx context.Context, channel string, message []
 func (p *RedisPublisher) Close() error {
 	return p.client.Close()
 }
-

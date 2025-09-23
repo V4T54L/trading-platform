@@ -94,9 +94,9 @@ func main() {
 	r.Post("/login", userHandler.Login)
 
 	// Protected routes
-	r.Group(func(r chi.Router) {
-		r.Use(handler.JWTAuthMiddleware(jwtSecret))
-		r.Get("/me", userHandler.GetProfile)
+	r.Group(func(auth chi.Router) {
+		auth.Use(handler.JWTAuthMiddleware(jwtSecret))
+		auth.Get("/me", userHandler.GetProfile)
 	})
 
 	// Server setup

@@ -186,8 +186,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // --- STATE & CONSTANTS ---
-    const API_BASE_URL = '/api';
-    const WS_URL = `ws://${window.location.host}/ws`;
+    // const API_BASE_URL = '/api';
+    /// const WS_URL = `ws://${window.location.host}/ws`;
+    const API_BASE_URL = 'https://symmetrical-fishstick-pqx99jg6wj43jjr-8080.app.github.dev/api';
+    const WS_URL = `ws://symmetrical-fishstick-pqx99jg6wj43jjr-8080.app.github.dev/ws`;
 
     let state = {
         token: localStorage.getItem('jwt_token'),
