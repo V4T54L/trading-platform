@@ -64,7 +64,7 @@
             <div class="flex items-center justify-between">
                 <button type="submit"
                     class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
-                    Sign In
+                    Submit
                 </button>
             </div>
             <p id="login-error" class="text-red-500 text-xs italic mt-4 text-center"></p>
@@ -206,7 +206,39 @@
                             </table>
                         </div>
                     </section>
+
                     <section class="bg-gray-800 p-4 rounded-lg shadow-lg">
+                        <h2 class="text-xl font-semibold text-gray-300 mb-3">Tick History</h2>
+
+                        <!-- Filter -->
+                        <div class="flex gap-2 mb-3">
+                            <input type="text" id="tick-filter-symbol" placeholder="Filter by symbol..."
+                                class="bg-gray-700 text-white border border-gray-600 rounded px-3 py-2 w-1/3">
+                        </div>
+
+                        <!-- Table -->
+                        <div class="overflow-x-auto max-h-96">
+                            <table class="w-full text-sm text-left">
+                                <thead class="text-xs text-gray-400 uppercase bg-gray-700 cursor-pointer">
+                                    <tr>
+                                        <th data-sort="symbol" class="px-4 py-2">Symbol</th>
+                                        <th data-sort="price" class="px-4 py-2">Price</th>
+                                        <th data-sort="timestamp" class="px-4 py-2">Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tick-history-body"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="flex justify-between items-center mt-3 text-gray-300 text-sm">
+                            <button id="prev-page" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">Prev</button>
+                            <span id="page-info"></span>
+                            <button id="next-page" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">Next</button>
+                        </div>
+                    </section>
+
+                    <section class="bg-gray-800 p-4 rounded-lg shadow-lg hidden">
                         <h2 class="text-xl font-semibold text-gray-300 mb-3">Real-time Event Log</h2>
                         <div id="log-container"
                             class="bg-gray-900 p-2 rounded font-mono text-xs text-green-400 h-48 overflow-y-auto">
@@ -257,6 +289,13 @@
             const openOrdersTableBody = document.getElementById('open-orders-table-body');
             const orderHistoryTableBody = document.getElementById('order-history-table-body');
             const logContainer = document.getElementById('log-container');
+
+            let tickHistory = [];
+            let currentPage = 1;
+            const rowsPerPage = 10;
+            let currentSortKey = 'timestamp';
+            let sortAsc = false;
+
 
             // --- API & WEBSOCKET UTILITIES ---
             async function apiFetch(endpoint, options = {}) {
@@ -321,6 +360,7 @@
                         // Handle Price Ticks
                         if (message.symbol && message.price !== undefined) {
                             updatePrice(message);
+                            addTickToHistory(message);
                         }
                         // Handle Order Updates (legacy or future)
                         else if (message.event_type && message.event_type.includes("Order")) {
@@ -368,6 +408,58 @@
                 setTimeout(() => {
                     priceCell.parentElement.classList.remove('bg-gray-700');
                 }, 300);
+            }
+
+            function addTickToHistory(tick) {
+                tickHistory.unshift({
+                    symbol: tick.symbol,
+                    price: tick.price,
+                    timestamp: tick.timestamp
+                });
+
+                // Keep only the latest 200 entries
+                if (tickHistory.length > 200) tickHistory.pop();
+
+                renderTickHistoryTable();
+            }
+
+            function renderTickHistoryTable() {
+                const tbody = document.getElementById('tick-history-body');
+                const filterSymbol = document.getElementById('tick-filter-symbol').value.trim().toUpperCase();
+
+                // Filter
+                let filtered = tickHistory.filter(t => t.symbol.includes(filterSymbol));
+
+                // Sort
+                filtered.sort((a, b) => {
+                    let valA = a[currentSortKey];
+                    let valB = b[currentSortKey];
+                    if (typeof valA === 'string') {
+                        return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                    }
+                    return sortAsc ? valA - valB : valB - valA;
+                });
+
+                // Pagination
+                const totalPages = Math.ceil(filtered.length / rowsPerPage);
+                currentPage = Math.max(1, Math.min(currentPage, totalPages));
+                const start = (currentPage - 1) * rowsPerPage;
+                const pageData = filtered.slice(start, start + rowsPerPage);
+
+                // Render
+                tbody.innerHTML = '';
+                for (const tick of pageData) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+            <td class="px-4 py-2">${tick.symbol}</td>
+            <td class="px-4 py-2 text-right">${tick.price.toFixed(2)}</td>
+            <td class="px-4 py-2">${tick.timestamp}</td>
+        `;
+                    tbody.appendChild(tr);
+                }
+
+                // Page Info
+                document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages || 1}`;
             }
 
             function renderAccount() {
@@ -631,6 +723,38 @@
                 loginBtn.classList.remove('bg-teal-500');
                 methodInput.value = 'register';
             }
+            document.getElementById('tick-filter-symbol').addEventListener('input', () => {
+                currentPage = 1;
+                renderTickHistoryTable();
+            });
+
+            document.getElementById('prev-page').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTickHistoryTable();
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', () => {
+                const maxPages = Math.ceil(tickHistory.length / rowsPerPage);
+                if (currentPage < maxPages) {
+                    currentPage++;
+                    renderTickHistoryTable();
+                }
+            });
+
+            document.querySelectorAll('thead th[data-sort]').forEach(th => {
+                th.addEventListener('click', () => {
+                    const key = th.dataset.sort;
+                    if (currentSortKey === key) {
+                        sortAsc = !sortAsc;
+                    } else {
+                        currentSortKey = key;
+                        sortAsc = true;
+                    }
+                    renderTickHistoryTable();
+                });
+            });
         }
     </script>
 

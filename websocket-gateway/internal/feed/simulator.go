@@ -55,7 +55,7 @@ func (s *Simulator) Start(ctx context.Context) {
 		prices[inst.Symbol] = 100 + rand.Float64()*2000 // Assign a random initial price
 	}
 
-	ticker := time.NewTicker(500 * time.Millisecond) // Generate a new tick every 250ms
+	ticker := time.NewTicker(time.Second) // Generate a new tick every 250ms
 	defer ticker.Stop()
 
 LOOP:
@@ -66,32 +66,33 @@ LOOP:
 		default:
 		}
 
-		// Pick a random instrument to update
-		inst := instruments[rand.Intn(len(instruments))]
+		now := time.Now()
+		formatted := now.Format("15:04:05 02/01") // HH:MM:SS dd/mm
 
-		// Fluctuate price slightly
-		change := (rand.Float64() - 0.5) * 0.5 // small random change
-		prices[inst.Symbol] += change
-		if prices[inst.Symbol] < 0 {
-			prices[inst.Symbol] = 0.01
-		}
+		for _, inst := range instruments {
+			change := (rand.Float64() - 0.5) * 0.5 // small random change
+			prices[inst.Symbol] += change
+			if prices[inst.Symbol] < 0 {
+				prices[inst.Symbol] = 0.01
+			}
 
-		tick := domain.Tick{
-			Symbol:    inst.Symbol,
-			Price:     prices[inst.Symbol],
-			Timestamp: time.Now().UnixMilli(),
-		}
+			tick := domain.Tick{
+				Symbol:    inst.Symbol,
+				Price:     prices[inst.Symbol],
+				Timestamp: formatted,
+			}
 
-		payload, err := json.Marshal(tick)
-		if err != nil {
-			log.Printf("Simulator: Error marshalling tick: %v", err)
-			continue
-		}
+			payload, err := json.Marshal(tick)
+			if err != nil {
+				log.Printf("Simulator: Error marshalling tick: %v", err)
+				continue
+			}
 
-		// Publish to the 'market_data' channel
-		err = s.redisClient.Publish(context.Background(), "market_data", payload).Err()
-		if err != nil {
-			log.Printf("Simulator: Error publishing to Redis: %v", err)
+			// Publish to the 'market_data' channel
+			err = s.redisClient.Publish(context.Background(), "market_data", payload).Err()
+			if err != nil {
+				log.Printf("Simulator: Error publishing to Redis: %v", err)
+			}
 		}
 	}
 }
