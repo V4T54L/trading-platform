@@ -1,10 +1,12 @@
 package main
 
 import (
-	"gotrade/websocket-gateway/internal/hub"
 	"log"
 	"net/http"
 	"os"
+
+	"gotrade/websocket-gateway/internal/feed" // Import simulator
+	"gotrade/websocket-gateway/internal/hub"
 
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
@@ -14,8 +16,7 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		// Allow all connections for simplicity
-		return true
+		return true // Allow all origins for simplicity
 	},
 }
 
@@ -41,6 +42,20 @@ func main() {
 		log.Fatal("REDIS_URL environment variable is not set")
 	}
 
+	// New: Get instrument service URL from environment
+	instrumentServiceURL := os.Getenv("INSTRUMENT_SERVICE_URL")
+	if instrumentServiceURL == "" {
+		log.Fatal("INSTRUMENT_SERVICE_URL environment variable is not set")
+	}
+
+	// New: Create and start the data simulator
+	simulator, err := feed.NewSimulator(redisURL, instrumentServiceURL)
+	if err != nil {
+		log.Fatalf("Failed to create data feed simulator: %v", err)
+	}
+	go simulator.Start()
+
+	// Create and run the WebSocket hub
 	hub, err := hub.NewHub(redisURL)
 	if err != nil {
 		log.Fatalf("Failed to create hub: %v", err)
@@ -52,9 +67,7 @@ func main() {
 	})
 
 	log.Printf("WebSocket server starting on port %s", port)
-	err = http.ListenAndServe(":"+port, nil)
-	if err != nil {
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
-

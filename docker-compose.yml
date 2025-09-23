@@ -107,10 +107,12 @@ services:
       - .env
     environment:
       - APP_PORT=8085
+      - INSTRUMENT_SERVICE_URL=http://instrument-service:8082
     networks:
       - gotrade-net
     depends_on:
       - redis
+      - instrument-service
 
   postgres:
     image: postgres:14-alpine

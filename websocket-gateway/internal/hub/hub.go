@@ -2,15 +2,17 @@ package hub
 
 import (
 	"context"
-	"gotrade/websocket-gateway/internal/client"
+	"encoding/json"
 	"log"
 
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
+
+	"gotrade/websocket-gateway/internal/client"
+	"gotrade/websocket-gateway/internal/domain"
 )
 
-// Hub maintains the set of active clients and broadcasts messages to the
-// clients.
+// Hub maintains the set of active clients and broadcasts messages to them.
 type Hub struct {
 	clients     map[*client.Client]bool
 	broadcast   chan []byte
@@ -25,12 +27,9 @@ func NewHub(redisAddr string) (*Hub, error) {
 		return nil, err
 	}
 	rdb := redis.NewClient(opts)
-
-	// Ping Redis to check connection
 	if _, err := rdb.Ping(context.Background()).Result(); err != nil {
 		return nil, err
 	}
-
 	return &Hub{
 		broadcast:   make(chan []byte),
 		register:    make(chan *client.Client),
@@ -45,22 +44,31 @@ func (h *Hub) Run() {
 
 	for {
 		select {
-		case client := <-h.register:
-			h.clients[client] = true
+		case c := <-h.register:
+			h.clients[c] = true
 			log.Println("Client registered")
-		case client := <-h.unregister:
-			if _, ok := h.clients[client]; ok {
-				delete(h.clients, client)
-				close(client.Send)
+		case c := <-h.unregister:
+			if _, ok := h.clients[c]; ok {
+				delete(h.clients, c)
+				close(c.Send)
 				log.Println("Client unregistered")
 			}
 		case message := <-h.broadcast:
-			for client := range h.clients {
-				select {
-				case client.Send <- message:
-				default:
-					close(client.Send)
-					delete(h.clients, client)
+			var tick domain.Tick
+			if err := json.Unmarshal(message, &tick); err != nil {
+				log.Printf("Could not unmarshal tick from redis: %v", err)
+				continue
+			}
+
+			// Iterate over clients and send message only if they are subscribed
+			for c := range h.clients {
+				if c.IsSubscribed(tick.Symbol) {
+					select {
+					case c.Send <- message:
+					default:
+						close(c.Send)
+						delete(h.clients, c)
+					}
 				}
 			}
 		}
@@ -68,25 +76,27 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) RegisterClient(conn *websocket.Conn) {
-	c := &client.Client{Conn: conn, Send: make(chan []byte, 256)}
+	c := client.NewClient(h, conn)
 	h.register <- c
-
-	// Allow collection of memory referenced by the caller by doing all work in
-	// new goroutines.
 	go c.WritePump()
-	go c.ReadPump(func(c *client.Client) {
-		h.unregister <- c
-	})
+	go c.ReadPump()
+}
+
+// Unregister satisfies the Hub interface for the client.
+func (h *Hub) Unregister(client *client.Client) {
+	h.unregister <- client
 }
 
 func (h *Hub) subscribeToRedis() {
-	pubsub := h.redisClient.Subscribe(context.Background(), "orders")
+	pubsub := h.redisClient.Subscribe(context.Background(), "orders", "market_data") // Changed channel
 	defer pubsub.Close()
-
 	ch := pubsub.Channel()
-
 	for msg := range ch {
-		log.Printf("Received message from Redis on channel %s: %s", msg.Channel, msg.Payload)
-		h.broadcast <- []byte(msg.Payload)
+		log.Printf("Received message from Redis on channel %s", msg.Channel)
+		if msg.Channel == "market_data" {
+			h.broadcast <- []byte(msg.Payload)
+		} else {
+			log.Printf("[WARNING] Idk what to do here")
+		}
 	}
 }

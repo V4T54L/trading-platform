@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,28 +8,62 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Simple scrollbar styling */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #2d3748; }
-        ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #718096; }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+
+        /* Animation for price updates */
+        .price-flash {
+            transition: background-color 0.1s ease-in-out;
+        }
     </style>
 </head>
+
 <body class="bg-gray-900 text-gray-200 font-sans">
 
-    <!-- Login View -->
     <div id="login-view" class="container mx-auto mt-20 max-w-md p-8 bg-gray-800 rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold text-center text-teal-400 mb-6">GoTrade</h1>
         <form id="login-form">
             <div class="mb-4">
                 <label for="email" class="block text-gray-400 text-sm font-bold mb-2">Email</label>
-                <input type="email" id="email" name="email" value="test@example.com" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-200 leading-tight focus:outline-none focus:shadow-outline" required>
+                <input type="email" id="email" name="email" value="test@example.com"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-200 leading-tight focus:outline-none focus:shadow-outline"
+                    required>
             </div>
-            <div class="mb-6">
+            <div class="mb-4">
                 <label for="password" class="block text-gray-400 text-sm font-bold mb-2">Password</label>
-                <input type="password" id="password" name="password" value="password123" class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-200 mb-3 leading-tight focus:outline-none focus:shadow-outline" required>
+                <input type="password" id="password" name="password" value="password123"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-200 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                    required>
+            </div>
+            <input type="hidden" id="method" name="method" value="login">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-gray-400 text-sm font-bold">Mode</span>
+                <div class="flex items-center space-x-4">
+                    <button type="button" id="loginToggle"
+                        class="bg-teal-500 text-white px-4 py-2 rounded focus:outline-none"
+                        onclick="toggleMethod('login')">Login</button>
+                    <button type="button" id="signupToggle"
+                        class="bg-gray-500 text-white px-4 py-2 rounded focus:outline-none"
+                        onclick="toggleMethod('signup')">Signup</button>
+                </div>
             </div>
             <div class="flex items-center justify-between">
-                <button type="submit" class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
+                <button type="submit"
+                    class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
                     Sign In
                 </button>
             </div>
@@ -36,72 +71,74 @@
         </form>
     </div>
 
-    <!-- App View -->
     <div id="app-view" class="hidden">
         <header class="bg-gray-800 shadow-md">
             <div class="container mx-auto px-4 py-3 flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-teal-400">GoTrade</h1>
                 <div>
                     <span id="user-email" class="text-gray-400 mr-4"></span>
-                    <button id="logout-btn" class="bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-4 rounded">Logout</button>
+                    <button id="logout-btn"
+                        class="bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-4 rounded">Logout</button>
                 </div>
             </div>
         </header>
 
         <main class="container mx-auto p-4">
-            <!-- Dashboard -->
             <section id="dashboard-section" class="bg-gray-800 p-4 rounded-lg shadow-lg mb-4">
                 <h2 class="text-xl font-semibold text-gray-300 mb-2">Account Dashboard</h2>
-                <div id="account-details" class="text-lg">
-                    Loading account...
-                </div>
+                <div id="account-details" class="text-lg">Loading account...</div>
             </section>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <!-- Left Column -->
                 <div class="lg:col-span-1 space-y-4">
-                    <!-- Watchlist -->
                     <section class="bg-gray-800 p-4 rounded-lg shadow-lg">
                         <h2 class="text-xl font-semibold text-gray-300 mb-3">Watchlist</h2>
                         <form id="watchlist-form" class="flex gap-2 mb-3">
-                            <select id="instrument-select-watchlist" class="flex-grow bg-gray-700 border border-gray-600 rounded py-2 px-3"></select>
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-3 rounded">Add</button>
+                            <select id="instrument-select-watchlist"
+                                class="flex-grow bg-gray-700 border border-gray-600 rounded py-2 px-3"></select>
+                            <button type="submit"
+                                class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-3 rounded">Add</button>
                         </form>
                         <div class="overflow-x-auto max-h-64">
                             <table class="w-full text-sm text-left">
                                 <thead class="text-xs text-gray-400 uppercase bg-gray-700">
                                     <tr>
                                         <th scope="col" class="px-4 py-2">Symbol</th>
-                                        <th scope="col" class="px-4 py-2">Type</th>
+                                        <th scope="col" class="px-4 py-2 text-right">Price</th>
                                         <th scope="col" class="px-4 py-2"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="watchlist-table-body">
-                                    <!-- Watchlist items will be rendered here -->
-                                </tbody>
+                                    </tbody>
                             </table>
                         </div>
                     </section>
 
-                    <!-- Order Entry -->
                     <section class="bg-gray-800 p-4 rounded-lg shadow-lg">
                         <h2 class="text-xl font-semibold text-gray-300 mb-3">Place Order</h2>
                         <form id="order-form">
                             <div class="mb-3">
-                                <label for="instrument-select-order" class="block text-sm font-medium text-gray-400">Instrument</label>
-                                <select id="instrument-select-order" name="instrumentId" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded py-2 px-3" required></select>
+                                <label for="instrument-select-order"
+                                    class="block text-sm font-medium text-gray-400">Instrument</label>
+                                <select id="instrument-select-order" name="instrumentId"
+                                    class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded py-2 px-3"
+                                    required></select>
                             </div>
                             <div class="grid grid-cols-2 gap-4 mb-3">
                                 <div>
                                     <label for="order-side" class="block text-sm font-medium text-gray-400">Side</label>
-                                    <select id="order-side" name="side" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded py-2 px-3" required>
+                                    <select id="order-side" name="side"
+                                        class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded py-2 px-3"
+                                        required>
                                         <option value="BUY">BUY</option>
                                         <option value="SELL">SELL</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label for="order-type" class="block text-sm font-medium text-gray-400">Type</label>
-                                    <select id="order-type" name="type" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded py-2 px-3" required>
+                                    <select id="order-type" name="type"
+                                        class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded py-2 px-3"
+                                        required>
                                         <option value="MARKET">MARKET</option>
                                         <option value="LIMIT">LIMIT</option>
                                     </select>
@@ -109,23 +146,28 @@
                             </div>
                             <div class="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label for="order-quantity" class="block text-sm font-medium text-gray-400">Quantity</label>
-                                    <input type="number" id="order-quantity" name="quantity" min="1" value="1" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded py-2 px-3" required>
+                                    <label for="order-quantity"
+                                        class="block text-sm font-medium text-gray-400">Quantity</label>
+                                    <input type="number" id="order-quantity" name="quantity" min="1" value="1"
+                                        class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded py-2 px-3"
+                                        required>
                                 </div>
                                 <div>
-                                    <label for="order-price" class="block text-sm font-medium text-gray-400">Price</label>
-                                    <input type="number" id="order-price" name="price" min="0" step="0.01" value="0" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded py-2 px-3">
+                                    <label for="order-price"
+                                        class="block text-sm font-medium text-gray-400">Price</label>
+                                    <input type="number" id="order-price" name="price" min="0" step="0.01" value="0"
+                                        class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded py-2 px-3">
                                 </div>
                             </div>
-                            <button type="submit" class="w-full bg-teal-600 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded">Place Order</button>
+                            <button type="submit"
+                                class="w-full bg-teal-600 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded">Place
+                                Order</button>
                             <p id="order-error" class="text-red-500 text-xs italic mt-2 text-center"></p>
                         </form>
                     </section>
                 </div>
 
-                <!-- Right Column -->
                 <div class="lg:col-span-2 space-y-4">
-                    <!-- Open Positions -->
                     <section class="bg-gray-800 p-4 rounded-lg shadow-lg">
                         <h2 class="text-xl font-semibold text-gray-300 mb-3">Open Orders</h2>
                         <div class="overflow-x-auto max-h-64">
@@ -141,14 +183,10 @@
                                         <th class="px-4 py-2"></th>
                                     </tr>
                                 </thead>
-                                <tbody id="open-orders-table-body">
-                                    <!-- Open orders will be rendered here -->
-                                </tbody>
+                                <tbody id="open-orders-table-body"></tbody>
                             </table>
                         </div>
                     </section>
-
-                    <!-- Order History -->
                     <section class="bg-gray-800 p-4 rounded-lg shadow-lg">
                         <h2 class="text-xl font-semibold text-gray-300 mb-3">Order History</h2>
                         <div class="overflow-x-auto max-h-64">
@@ -164,18 +202,14 @@
                                         <th class="px-4 py-2">Updated At</th>
                                     </tr>
                                 </thead>
-                                <tbody id="order-history-table-body">
-                                    <!-- Order history will be rendered here -->
-                                </tbody>
+                                <tbody id="order-history-table-body"></tbody>
                             </table>
                         </div>
                     </section>
-
-                    <!-- Real-time Log -->
                     <section class="bg-gray-800 p-4 rounded-lg shadow-lg">
                         <h2 class="text-xl font-semibold text-gray-300 mb-3">Real-time Event Log</h2>
-                        <div id="log-container" class="bg-gray-900 p-2 rounded font-mono text-xs text-green-400 h-48 overflow-y-auto">
-                            <!-- Log messages will be appended here -->
+                        <div id="log-container"
+                            class="bg-gray-900 p-2 rounded font-mono text-xs text-green-400 h-48 overflow-y-auto">
                         </div>
                     </section>
                 </div>
@@ -183,360 +217,426 @@
         </main>
     </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // --- STATE & CONSTANTS ---
-    // const API_BASE_URL = '/api';
-    /// const WS_URL = `ws://${window.location.host}/ws`;
-    const API_BASE_URL = 'https://symmetrical-fishstick-pqx99jg6wj43jjr-8080.app.github.dev/api';
-    const WS_URL = `ws://symmetrical-fishstick-pqx99jg6wj43jjr-8080.app.github.dev/ws`;
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- STATE & CONSTANTS ---
+            // Use relative paths for portability
+            // const API_BASE_URL = '/api';
+            // const WS_URL = `wss://${window.location.host}/ws`;
+            // --- Fallback for Codespaces/Gitpod ---
+            const API_BASE_URL = 'https://symmetrical-fishstick-pqx99jg6wj43jjr-8080.app.github.dev/api';
+            const WS_URL = `wss://symmetrical-fishstick-pqx99jg6wj43jjr-8080.app.github.dev/ws`;
 
-    let state = {
-        token: localStorage.getItem('jwt_token'),
-        user: null,
-        account: null,
-        instruments: [],
-        watchlist: JSON.parse(localStorage.getItem('watchlist')) || [], // Array of instrument IDs
-        openOrders: [],
-        orderHistory: [],
-        ws: null,
-    };
+            let state = {
+                token: localStorage.getItem('jwt_token'),
+                user: null,
+                account: null,
+                instruments: [], // Array of instrument objects
+                watchlist: JSON.parse(localStorage.getItem('watchlist')) || [], // Array of instrument IDs
+                prices: {}, // Key-value store for last price of each symbol
+                openOrders: [],
+                orderHistory: [],
+                ws: null,
+            };
 
-    // --- DOM ELEMENT REFERENCES ---
-    const loginView = document.getElementById('login-view');
-    const appView = document.getElementById('app-view');
-    const loginForm = document.getElementById('login-form');
-    const loginError = document.getElementById('login-error');
-    const userEmailEl = document.getElementById('user-email');
-    const logoutBtn = document.getElementById('logout-btn');
-    const accountDetailsEl = document.getElementById('account-details');
-    const watchlistForm = document.getElementById('watchlist-form');
-    const instrumentSelectWatchlist = document.getElementById('instrument-select-watchlist');
-    const watchlistTableBody = document.getElementById('watchlist-table-body');
-    const orderForm = document.getElementById('order-form');
-    const instrumentSelectOrder = document.getElementById('instrument-select-order');
-    const orderError = document.getElementById('order-error');
-    const openOrdersTableBody = document.getElementById('open-orders-table-body');
-    const orderHistoryTableBody = document.getElementById('order-history-table-body');
-    const logContainer = document.getElementById('log-container');
+            // --- DOM ELEMENT REFERENCES ---
+            const loginView = document.getElementById('login-view');
+            const appView = document.getElementById('app-view');
+            const loginForm = document.getElementById('login-form');
+            const loginError = document.getElementById('login-error');
+            const userEmailEl = document.getElementById('user-email');
+            const logoutBtn = document.getElementById('logout-btn');
+            const accountDetailsEl = document.getElementById('account-details');
+            const watchlistForm = document.getElementById('watchlist-form');
+            const instrumentSelectWatchlist = document.getElementById('instrument-select-watchlist');
+            const watchlistTableBody = document.getElementById('watchlist-table-body');
+            const orderForm = document.getElementById('order-form');
+            const instrumentSelectOrder = document.getElementById('instrument-select-order');
+            const orderError = document.getElementById('order-error');
+            const openOrdersTableBody = document.getElementById('open-orders-table-body');
+            const orderHistoryTableBody = document.getElementById('order-history-table-body');
+            const logContainer = document.getElementById('log-container');
 
-    // --- API & WEBSOCKET UTILITIES ---
-    async function apiFetch(endpoint, options = {}) {
-        const headers = { 'Content-Type': 'application/json', ...options.headers };
-        if (state.token) {
-            headers['Authorization'] = `Bearer ${state.token}`;
-        }
-
-        try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-            if (response.status === 401) {
-                logout();
-                return;
-            }
-            const data = response.headers.get('Content-Type')?.includes('application/json') ? await response.json() : await response.text();
-            if (!response.ok) {
-                throw new Error(data.error || `HTTP error! status: ${response.status}`);
-            }
-            return data;
-        } catch (error) {
-            console.error(`API fetch error for ${endpoint}:`, error);
-            throw error;
-        }
-    }
-
-    function connectWebSocket() {
-        if (state.ws) {
-            state.ws.close();
-        }
-        state.ws = new WebSocket(WS_URL);
-
-        state.ws.onopen = () => {
-            addLogMessage('WebSocket connection established.');
-        };
-
-        state.ws.onmessage = (event) => {
-            addLogMessage(`RECV: ${event.data}`);
-            try {
-                const message = JSON.parse(event.data);
-                // A real app would have more structured messages
-                // For now, just refresh orders on any message
-                if (message.event_type && message.event_type.includes("Order")) {
-                    fetchOrders();
+            // --- API & WEBSOCKET UTILITIES ---
+            async function apiFetch(endpoint, options = {}) {
+                const headers = { 'Content-Type': 'application/json', ...options.headers };
+                if (state.token) {
+                    headers['Authorization'] = `Bearer ${state.token}`;
                 }
-            } catch (e) {
-                console.error("Failed to parse WebSocket message:", e);
-            }
-        };
 
-        state.ws.onclose = () => {
-            addLogMessage('WebSocket connection closed. Reconnecting in 5s...');
-            setTimeout(connectWebSocket, 5000);
-        };
-
-        state.ws.onerror = (error) => {
-            addLogMessage(`WebSocket error: ${error.message || 'An unknown error occurred'}`);
-            console.error('WebSocket error:', error);
-            state.ws.close();
-        };
-    }
-
-    // --- RENDERING FUNCTIONS ---
-    function renderAccount() {
-        if (state.account) {
-            accountDetailsEl.innerHTML = `<strong>Balance:</strong> ${state.account.balance.toFixed(2)} ${state.account.currency}`;
-        } else {
-            accountDetailsEl.textContent = 'Could not load account details.';
-        }
-    }
-
-    function renderInstrumentSelectors() {
-        const optionsHtml = state.instruments
-            .map(i => `<option value="${i.id}">${i.symbol} - ${i.name}</option>`)
-            .join('');
-        instrumentSelectWatchlist.innerHTML = optionsHtml;
-        instrumentSelectOrder.innerHTML = optionsHtml;
-    }
-
-    function renderWatchlist() {
-        const watchlistInstruments = state.instruments.filter(i => state.watchlist.includes(i.id));
-        if (watchlistInstruments.length === 0) {
-            watchlistTableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">Watchlist is empty.</td></tr>`;
-            return;
-        }
-        watchlistTableBody.innerHTML = watchlistInstruments.map(i => `
-            <tr class="bg-gray-800 border-b border-gray-700">
-                <td class="px-4 py-2 font-medium whitespace-nowrap">${i.symbol}</td>
-                <td class="px-4 py-2">${i.type}</td>
-                <td class="px-4 py-2 text-right">
-                    <button class="remove-watchlist-btn text-red-500 hover:text-red-700" data-id="${i.id}">X</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function renderOrders() {
-        const findInstrumentSymbol = id => state.instruments.find(i => i.id === id)?.symbol || `ID ${id}`;
-        
-        // Open Orders
-        if (state.openOrders.length === 0) {
-            openOrdersTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500">No open orders.</td></tr>`;
-        } else {
-            openOrdersTableBody.innerHTML = state.openOrders.map(o => `
-                <tr class="bg-gray-800 border-b border-gray-700">
-                    <td class="px-4 py-2">${o.id}</td>
-                    <td class="px-4 py-2">${findInstrumentSymbol(o.instrument_id)}</td>
-                    <td class="px-4 py-2 ${o.side === 'BUY' ? 'text-green-400' : 'text-red-400'}">${o.side}</td>
-                    <td class="px-4 py-2">${o.quantity}</td>
-                    <td class="px-4 py-2">${o.type === 'MARKET' ? 'MKT' : o.price.toFixed(2)}</td>
-                    <td class="px-4 py-2">${o.status}</td>
-                    <td class="px-4 py-2 text-right">
-                        <button class="cancel-order-btn bg-red-600 hover:bg-red-800 text-white text-xs py-1 px-2 rounded" data-id="${o.id}">Cancel</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Order History
-        if (state.orderHistory.length === 0) {
-            orderHistoryTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500">No order history.</td></tr>`;
-        } else {
-            orderHistoryTableBody.innerHTML = state.orderHistory.map(o => `
-                <tr class="bg-gray-800 border-b border-gray-700">
-                    <td class="px-4 py-2">${o.id}</td>
-                    <td class="px-4 py-2">${findInstrumentSymbol(o.instrument_id)}</td>
-                    <td class="px-4 py-2 ${o.side === 'BUY' ? 'text-green-400' : 'text-red-400'}">${o.side}</td>
-                    <td class="px-4 py-2">${o.quantity}</td>
-                    <td class="px-4 py-2">${o.type === 'MARKET' ? 'MKT' : o.price.toFixed(2)}</td>
-                    <td class="px-4 py-2">${o.status}</td>
-                    <td class="px-4 py-2">${new Date(o.updated_at).toLocaleString()}</td>
-                </tr>
-            `).join('');
-        }
-    }
-
-    function addLogMessage(message) {
-        const logEntry = document.createElement('div');
-        logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        logContainer.appendChild(logEntry);
-        logContainer.scrollTop = logContainer.scrollHeight;
-    }
-
-    // --- DATA FETCHING ---
-    async function fetchAccount() {
-        try {
-            state.account = await apiFetch('/account/');
-            renderAccount();
-        } catch (error) {
-            console.error('Failed to fetch account:', error);
-        }
-    }
-
-    async function fetchInstruments() {
-        try {
-            state.instruments = await apiFetch('/instruments/') || [];
-            renderInstrumentSelectors();
-            renderWatchlist(); // Re-render watchlist with full instrument data
-        } catch (error) {
-            console.error('Failed to fetch instruments:', error);
-        }
-    }
-
-    async function fetchOrders() {
-        try {
-            // Assuming these endpoints exist as per requirements
-            const [openOrders, orderHistory] = await Promise.all([
-                apiFetch('/orders/open'),
-                apiFetch('/orders/history')
-            ]);
-            state.openOrders = openOrders || [];
-            state.orderHistory = orderHistory || [];
-            renderOrders();
-        } catch (error) {
-            console.error('Failed to fetch orders:', error);
-            // Mocking empty arrays on failure to prevent UI breaking
-            state.openOrders = [];
-            state.orderHistory = [];
-            renderOrders();
-        }
-    }
-
-    // --- EVENT HANDLERS & LOGIC ---
-    async function handleLogin(event) {
-        event.preventDefault();
-        loginError.textContent = '';
-        const email = loginForm.email.value;
-        const password = loginForm.password.value;
-
-        try {
-            const data = await apiFetch('/user/login', {
-                method: 'POST',
-                body: JSON.stringify({ email, password }),
-            });
-            state.token = data.token;
-            localStorage.setItem('jwt_token', state.token);
-            init();
-        } catch (error) {
-            loginError.textContent = error.message || 'Login failed. Please check your credentials.';
-        }
-    }
-
-    function logout() {
-        state.token = null;
-        state.user = null;
-        localStorage.removeItem('jwt_token');
-        if (state.ws) {
-            state.ws.close();
-        }
-        showView('login');
-    }
-
-    function handleAddWatchlist(event) {
-        event.preventDefault();
-        const instrumentId = parseInt(instrumentSelectWatchlist.value, 10);
-        if (instrumentId && !state.watchlist.includes(instrumentId)) {
-            state.watchlist.push(instrumentId);
-            localStorage.setItem('watchlist', JSON.stringify(state.watchlist));
-            renderWatchlist();
-        }
-    }
-
-    function handleRemoveWatchlist(event) {
-        if (event.target.classList.contains('remove-watchlist-btn')) {
-            const instrumentId = parseInt(event.target.dataset.id, 10);
-            state.watchlist = state.watchlist.filter(id => id !== instrumentId);
-            localStorage.setItem('watchlist', JSON.stringify(state.watchlist));
-            renderWatchlist();
-        }
-    }
-
-    async function handlePlaceOrder(event) {
-        event.preventDefault();
-        orderError.textContent = '';
-        const formData = new FormData(orderForm);
-        const order = {
-            instrument_id: parseInt(formData.get('instrumentId'), 10),
-            side: formData.get('side'),
-            type: formData.get('type'),
-            quantity: parseInt(formData.get('quantity'), 10),
-            price: parseFloat(formData.get('price')),
-        };
-
-        if (order.type === 'MARKET') {
-            order.price = 0;
-        }
-
-        try {
-            await apiFetch('/orders/', {
-                method: 'POST',
-                body: JSON.stringify(order),
-            });
-            orderForm.reset();
-            // The websocket message should trigger a refresh, but we can do it manually too
-            fetchOrders();
-        } catch (error) {
-            orderError.textContent = error.message || 'Failed to place order.';
-        }
-    }
-
-    async function handleCancelOrder(event) {
-        if (event.target.classList.contains('cancel-order-btn')) {
-            const orderId = event.target.dataset.id;
-            if (confirm(`Are you sure you want to cancel order #${orderId}?`)) {
                 try {
-                    await apiFetch(`/orders/${orderId}`, { method: 'DELETE' });
-                    // The websocket message should trigger a refresh, but we can do it manually too
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+                    if (response.status === 401) {
+                        logout();
+                        return;
+                    }
+                    const data = response.headers.get('Content-Type')?.includes('application/json') ? await response.json() : await response.text();
+                    if (!response.ok) {
+                        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                    }
+                    return data;
+                } catch (error) {
+                    console.error(`API fetch error for ${endpoint}:`, error);
+                    throw error;
+                }
+            }
+
+            function wsSendMessage(payload) {
+                if (state.ws && state.ws.readyState === WebSocket.OPEN) {
+                    const message = JSON.stringify(payload);
+                    state.ws.send(message);
+                    addLogMessage(`SENT: ${message}`);
+                }
+            }
+
+            function subscribeToSymbols(symbols) {
+                if (!symbols || symbols.length === 0) return;
+                wsSendMessage({ action: 'subscribe', symbols });
+            }
+
+            function unsubscribeFromSymbols(symbols) {
+                if (!symbols || symbols.length === 0) return;
+                wsSendMessage({ action: 'unsubscribe', symbols });
+            }
+
+            function connectWebSocket() {
+                if (state.ws) state.ws.close();
+                
+                // Use a secure connection (wss) if the main page is served over https
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.hostname}:8085/ws`; // Use explicit port for gateway
+
+                state.ws = new WebSocket(wsUrl);
+
+                state.ws.onopen = () => {
+                    addLogMessage('WebSocket connection established.');
+                    // Subscribe to all instruments currently in the watchlist
+                    const watchlistSymbols = state.instruments
+                        .filter(i => state.watchlist.includes(i.id))
+                        .map(i => i.symbol);
+                    subscribeToSymbols(watchlistSymbols);
+                };
+
+                state.ws.onmessage = (event) => {
+                    try {
+                        const message = JSON.parse(event.data);
+
+                        // Handle Price Ticks
+                        if (message.symbol && message.price !== undefined) {
+                            updatePrice(message);
+                        }
+                        // Handle Order Updates (legacy or future)
+                        else if (message.event_type && message.event_type.includes("Order")) {
+                            addLogMessage(`RECV: Order update received.`);
+                            fetchOrders();
+                        }
+                    } catch (e) {
+                        console.error("Failed to parse WebSocket message:", event.data, e);
+                    }
+                };
+
+                state.ws.onclose = () => {
+                    addLogMessage('WebSocket connection closed. Reconnecting in 5s...');
+                    setTimeout(connectWebSocket, 5000);
+                };
+
+                state.ws.onerror = (error) => {
+                    addLogMessage(`WebSocket error: An unknown error occurred.`);
+                    console.error('WebSocket error:', error);
+                    state.ws.close();
+                };
+            }
+            
+            // --- RENDERING & UI LOGIC ---
+            function updatePrice(tick) {
+                const priceCell = document.getElementById(`price-${tick.symbol}`);
+                if (!priceCell) return; // Element not in view (not on watchlist)
+
+                const lastPrice = state.prices[tick.symbol] || 0;
+                const newPrice = tick.price;
+                state.prices[tick.symbol] = newPrice;
+
+                priceCell.textContent = newPrice.toFixed(2);
+                
+                // Visual feedback for price change
+                priceCell.classList.remove('text-green-400', 'text-red-400');
+                if (newPrice > lastPrice) {
+                    priceCell.classList.add('text-green-400');
+                } else if (newPrice < lastPrice) {
+                    priceCell.classList.add('text-red-400');
+                }
+
+                // Flash background
+                priceCell.parentElement.classList.add('price-flash', 'bg-gray-700');
+                setTimeout(() => {
+                    priceCell.parentElement.classList.remove('bg-gray-700');
+                }, 300);
+            }
+
+            function renderAccount() {
+                if (state.account) {
+                    accountDetailsEl.innerHTML = `<strong>Balance:</strong> ${state.account.balance.toFixed(2)} ${state.account.currency}`;
+                } else {
+                    accountDetailsEl.textContent = 'Could not load account details.';
+                }
+            }
+
+            function renderInstrumentSelectors() {
+                const optionsHtml = state.instruments
+                    .map(i => `<option value="${i.id}">${i.symbol} - ${i.name}</option>`)
+                    .join('');
+                instrumentSelectWatchlist.innerHTML = optionsHtml;
+                instrumentSelectOrder.innerHTML = optionsHtml;
+            }
+
+            function renderWatchlist() {
+                const watchlistInstruments = state.instruments.filter(i => state.watchlist.includes(i.id));
+                if (watchlistInstruments.length === 0) {
+                    watchlistTableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">Watchlist is empty.</td></tr>`;
+                    return;
+                }
+                watchlistTableBody.innerHTML = watchlistInstruments.map(i => `
+                    <tr class="bg-gray-800 border-b border-gray-700">
+                        <td class="px-4 py-2 font-medium whitespace-nowrap">${i.symbol}</td>
+                        <td class="px-4 py-2 font-mono text-right" id="price-${i.symbol}">-</td>
+                        <td class="px-4 py-2 text-right">
+                            <button class="remove-watchlist-btn text-red-500 hover:text-red-700" data-id="${i.id}" data-symbol="${i.symbol}">X</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            function renderOrders() {
+                 const findInstrumentSymbol = id => state.instruments.find(i => i.id === id)?.symbol || `ID ${id}`;
+                if (state.openOrders.length === 0) {
+                    openOrdersTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500">No open orders.</td></tr>`;
+                } else {
+                    openOrdersTableBody.innerHTML = state.openOrders.map(o => `
+                        <tr class="bg-gray-800 border-b border-gray-700">
+                            <td class="px-4 py-2">${o.id}</td>
+                            <td class="px-4 py-2">${findInstrumentSymbol(o.instrument_id)}</td>
+                            <td class="px-4 py-2 ${o.side === 'BUY' ? 'text-green-400' : 'text-red-400'}">${o.side}</td>
+                            <td class="px-4 py-2">${o.quantity}</td>
+                            <td class="px-4 py-2">${o.type === 'MARKET' ? 'MKT' : o.price.toFixed(2)}</td>
+                            <td class="px-4 py-2">${o.status}</td>
+                            <td class="px-4 py-2 text-right">
+                                <button class="cancel-order-btn bg-red-600 hover:bg-red-800 text-white text-xs py-1 px-2 rounded" data-id="${o.id}">Cancel</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+                if (state.orderHistory.length === 0) {
+                    orderHistoryTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500">No order history.</td></tr>`;
+                } else {
+                    orderHistoryTableBody.innerHTML = state.orderHistory.map(o => `
+                        <tr class="bg-gray-800 border-b border-gray-700">
+                            <td class="px-4 py-2">${o.id}</td>
+                            <td class="px-4 py-2">${findInstrumentSymbol(o.instrument_id)}</td>
+                            <td class="px-4 py-2 ${o.side === 'BUY' ? 'text-green-400' : 'text-red-400'}">${o.side}</td>
+                            <td class="px-4 py-2">${o.quantity}</td>
+                            <td class="px-4 py-2">${o.type === 'MARKET' ? 'MKT' : o.price.toFixed(2)}</td>
+                            <td class="px-4 py-2">${o.status}</td>
+                            <td class="px-4 py-2">${new Date(o.updated_at).toLocaleString()}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+
+            function addLogMessage(message) {
+                const logEntry = document.createElement('div');
+                logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+
+            // --- DATA FETCHING ---
+            async function fetchAccount() {
+                try {
+                    state.account = await apiFetch('/account/');
+                    renderAccount();
+                } catch (error) { console.error('Failed to fetch account:', error); }
+            }
+
+            async function fetchInstruments() {
+                try {
+                    state.instruments = await apiFetch('/instruments/') || [];
+                    renderInstrumentSelectors();
+                    renderWatchlist();
+                } catch (error) { console.error('Failed to fetch instruments:', error); }
+            }
+
+            async function fetchOrders() {
+                try {
+                    const orders = await apiFetch('/orders/') || [];
+                    state.openOrders = orders?.filter(e => (e.status === "OPEN")) || [];
+                    state.orderHistory = orders?.filter(e => (e.status !== "OPEN")) || [];
+                    renderOrders();
+                } catch (error) {
+                    console.error('Failed to fetch orders:', error);
+                    state.openOrders = [];
+                    state.orderHistory = [];
+                    renderOrders();
+                }
+            }
+
+            // --- EVENT HANDLERS & LOGIC ---
+            function handleAddWatchlist(event) {
+                event.preventDefault();
+                const instrumentId = parseInt(instrumentSelectWatchlist.value, 10);
+                if (instrumentId && !state.watchlist.includes(instrumentId)) {
+                    state.watchlist.push(instrumentId);
+                    localStorage.setItem('watchlist', JSON.stringify(state.watchlist));
+                    renderWatchlist();
+
+                    // Subscribe to the new instrument's price feed
+                    const instrument = state.instruments.find(i => i.id === instrumentId);
+                    if (instrument) {
+                        subscribeToSymbols([instrument.symbol]);
+                    }
+                }
+            }
+
+            function handleRemoveWatchlist(event) {
+                if (event.target.classList.contains('remove-watchlist-btn')) {
+                    const instrumentId = parseInt(event.target.dataset.id, 10);
+                    const symbol = event.target.dataset.symbol;
+
+                    state.watchlist = state.watchlist.filter(id => id !== instrumentId);
+                    localStorage.setItem('watchlist', JSON.stringify(state.watchlist));
+                    renderWatchlist();
+                    
+                    // Unsubscribe from the price feed
+                    unsubscribeFromSymbols([symbol]);
+                }
+            }
+            
+            async function handleLogin(event) {
+                event.preventDefault();
+                loginError.textContent = '';
+                const email = loginForm.email.value;
+                const password = loginForm.password.value;
+                const method = loginForm.method.value;
+
+                try {
+                    const data = await apiFetch(`/user/${method}`, {
+                        method: 'POST',
+                        body: JSON.stringify({ email, password }),
+                    });
+                    state.token = data.token;
+                    localStorage.setItem('jwt_token', state.token);
+                    init();
+                } catch (error) {
+                    loginError.textContent = error.message || 'Login failed. Please check your credentials.';
+                }
+            }
+
+            function logout() {
+                state.token = null;
+                state.user = null;
+                localStorage.removeItem('jwt_token');
+                if (state.ws) {
+                    state.ws.onclose = null; // prevent reconnecting on manual logout
+                    state.ws.close();
+                }
+                showView('login');
+            }
+
+            async function handlePlaceOrder(event) {
+                event.preventDefault();
+                orderError.textContent = '';
+                const formData = new FormData(orderForm);
+                const order = {
+                    instrument_id: parseInt(formData.get('instrumentId'), 10),
+                    side: formData.get('side'),
+                    type: formData.get('type'),
+                    quantity: parseInt(formData.get('quantity'), 10),
+                    price: parseFloat(formData.get('price')),
+                };
+                if (order.type === 'MARKET') order.price = 0;
+
+                try {
+                    await apiFetch('/orders/', { method: 'POST', body: JSON.stringify(order) });
+                    orderForm.reset();
                     fetchOrders();
                 } catch (error) {
-                    alert(`Failed to cancel order: ${error.message}`);
+                    orderError.textContent = error.message || 'Failed to place order.';
                 }
             }
-        }
-    }
 
-    function showView(viewName) {
-        loginView.classList.toggle('hidden', viewName !== 'login');
-        appView.classList.toggle('hidden', viewName !== 'app');
-    }
-
-    async function loadAppData() {
-        userEmailEl.textContent = state.user.email;
-        await Promise.all([
-            fetchAccount(),
-            fetchInstruments(),
-            fetchOrders()
-        ]);
-        connectWebSocket();
-    }
-
-    // --- INITIALIZATION ---
-    async function init() {
-        if (state.token) {
-            try {
-                state.user = await apiFetch('/user/me');
-                showView('app');
-                await loadAppData();
-            } catch (error) {
-                // Token is invalid or expired
-                logout();
+            async function handleCancelOrder(event) {
+                if (event.target.classList.contains('cancel-order-btn')) {
+                    const orderId = event.target.dataset.id;
+                    if (confirm(`Are you sure you want to cancel order #${orderId}?`)) {
+                        try {
+                            await apiFetch(`/orders/${orderId}`, { method: 'DELETE' });
+                            fetchOrders();
+                        } catch (error) {
+                            alert(`Failed to cancel order: ${error.message}`);
+                        }
+                    }
+                }
             }
-        } else {
-            showView('login');
+
+            function showView(viewName) {
+                loginView.classList.toggle('hidden', viewName !== 'login');
+                appView.classList.toggle('hidden', viewName !== 'app');
+            }
+
+            async function loadAppData() {
+                userEmailEl.textContent = state.user.email;
+                await Promise.all([
+                    fetchAccount(),
+                    fetchInstruments(),
+                    fetchOrders()
+                ]);
+                connectWebSocket();
+            }
+
+            async function init() {
+                if (state.token) {
+                    try {
+                        state.user = await apiFetch('/user/me');
+                        showView('app');
+                        await loadAppData();
+                    } catch (error) {
+                        logout();
+                    }
+                } else {
+                    showView('login');
+                }
+            }
+
+            loginForm.addEventListener('submit', handleLogin);
+            logoutBtn.addEventListener('click', logout);
+            watchlistForm.addEventListener('submit', handleAddWatchlist);
+            watchlistTableBody.addEventListener('click', handleRemoveWatchlist);
+            orderForm.addEventListener('submit', handlePlaceOrder);
+            openOrdersTableBody.addEventListener('click', handleCancelOrder);
+
+            init();
+        });
+
+        function toggleMethod(method) {
+            const loginBtn = document.getElementById('loginToggle');
+            const signupBtn = document.getElementById('signupToggle');
+            const methodInput = document.getElementById('method');
+
+            if (method === 'login') {
+                loginBtn.classList.add('bg-teal-500');
+                loginBtn.classList.remove('bg-gray-500');
+                signupBtn.classList.add('bg-gray-500');
+                signupBtn.classList.remove('bg-teal-500');
+                methodInput.value = 'login';
+            } else {
+                signupBtn.classList.add('bg-teal-500');
+                signupBtn.classList.remove('bg-gray-500');
+                loginBtn.classList.add('bg-gray-500');
+                loginBtn.classList.remove('bg-teal-500');
+                methodInput.value = 'register';
+            }
         }
-    }
-
-    // Attach event listeners
-    loginForm.addEventListener('submit', handleLogin);
-    logoutBtn.addEventListener('click', logout);
-    watchlistForm.addEventListener('submit', handleAddWatchlist);
-    watchlistTableBody.addEventListener('click', handleRemoveWatchlist);
-    orderForm.addEventListener('submit', handlePlaceOrder);
-    openOrdersTableBody.addEventListener('click', handleCancelOrder);
-
-    // Start the app
-    init();
-});
-</script>
+    </script>
 
 </body>
-</html>
 
+</html>
