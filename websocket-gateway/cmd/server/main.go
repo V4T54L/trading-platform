@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -21,6 +22,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func serveWs(hub *hub.Hub, w http.ResponseWriter, r *http.Request) {
+	log.Println("[Ws Service] Upgrade Request")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -53,7 +55,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create data feed simulator: %v", err)
 	}
-	go simulator.Start()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go simulator.Start(ctx)
 
 	// Create and run the WebSocket hub
 	hub, err := hub.NewHub(redisURL)

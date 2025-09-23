@@ -47,6 +47,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8082/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   instrument-seeder:
     build:
@@ -96,7 +101,6 @@ services:
       postgres:
         condition: service_healthy
 
-
   websocket-gateway:
     build:
       context: ./websocket-gateway
@@ -111,8 +115,10 @@ services:
     networks:
       - gotrade-net
     depends_on:
-      - redis
-      - instrument-service
+      instrument-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   postgres:
     image: postgres:14-alpine
@@ -128,7 +134,7 @@ services:
     networks:
       - gotrade-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -141,7 +147,7 @@ services:
     networks:
       - gotrade-net
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -153,4 +159,5 @@ networks:
 
 volumes:
   postgres-data:
+
 

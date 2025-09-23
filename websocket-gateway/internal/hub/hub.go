@@ -92,11 +92,11 @@ func (h *Hub) subscribeToRedis() {
 	defer pubsub.Close()
 	ch := pubsub.Channel()
 	for msg := range ch {
-		log.Printf("Received message from Redis on channel %s", msg.Channel)
+		// log.Printf("Received message from Redis on channel %s", msg.Channel)
 		if msg.Channel == "market_data" {
 			h.broadcast <- []byte(msg.Payload)
 		} else {
-			log.Printf("[WARNING] Idk what to do here")
+			log.Printf("[WARNING] Idk what to do here, Received message from Redis on channel %s", msg.Channel)
 		}
 	}
 }

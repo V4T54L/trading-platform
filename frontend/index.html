@@ -109,7 +109,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="watchlist-table-body">
-                                    </tbody>
+                                </tbody>
                             </table>
                         </div>
                     </section>
@@ -225,7 +225,8 @@
             // const WS_URL = `wss://${window.location.host}/ws`;
             // --- Fallback for Codespaces/Gitpod ---
             const API_BASE_URL = 'https://symmetrical-fishstick-pqx99jg6wj43jjr-8080.app.github.dev/api';
-            const WS_URL = `wss://symmetrical-fishstick-pqx99jg6wj43jjr-8080.app.github.dev/ws`;
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const WS_URL = `${protocol}//${window.location.hostname}/ws`;
 
             let state = {
                 token: localStorage.getItem('jwt_token'),
@@ -301,12 +302,8 @@
 
             function connectWebSocket() {
                 if (state.ws) state.ws.close();
-                
-                // Use a secure connection (wss) if the main page is served over https
-                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const wsUrl = `${protocol}//${window.location.hostname}:8085/ws`; // Use explicit port for gateway
 
-                state.ws = new WebSocket(wsUrl);
+                state.ws = new WebSocket(WS_URL);
 
                 state.ws.onopen = () => {
                     addLogMessage('WebSocket connection established.');
@@ -346,7 +343,7 @@
                     state.ws.close();
                 };
             }
-            
+
             // --- RENDERING & UI LOGIC ---
             function updatePrice(tick) {
                 const priceCell = document.getElementById(`price-${tick.symbol}`);
@@ -357,7 +354,7 @@
                 state.prices[tick.symbol] = newPrice;
 
                 priceCell.textContent = newPrice.toFixed(2);
-                
+
                 // Visual feedback for price change
                 priceCell.classList.remove('text-green-400', 'text-red-400');
                 if (newPrice > lastPrice) {
@@ -407,7 +404,7 @@
             }
 
             function renderOrders() {
-                 const findInstrumentSymbol = id => state.instruments.find(i => i.id === id)?.symbol || `ID ${id}`;
+                const findInstrumentSymbol = id => state.instruments.find(i => i.id === id)?.symbol || `ID ${id}`;
                 if (state.openOrders.length === 0) {
                     openOrdersTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500">No open orders.</td></tr>`;
                 } else {
@@ -504,12 +501,12 @@
                     state.watchlist = state.watchlist.filter(id => id !== instrumentId);
                     localStorage.setItem('watchlist', JSON.stringify(state.watchlist));
                     renderWatchlist();
-                    
+
                     // Unsubscribe from the price feed
                     unsubscribeFromSymbols([symbol]);
                 }
             }
-            
+
             async function handleLogin(event) {
                 event.preventDefault();
                 loginError.textContent = '';

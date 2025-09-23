@@ -42,7 +42,7 @@ func NewSimulator(redisAddr, instrumentServiceURL string) (*Simulator, error) {
 }
 
 // Start runs the simulator in a loop.
-func (s *Simulator) Start() {
+func (s *Simulator) Start(ctx context.Context) {
 	log.Println("Starting market data feed simulator...")
 	instruments, err := s.fetchInstruments()
 	if err != nil || len(instruments) == 0 {
@@ -58,7 +58,14 @@ func (s *Simulator) Start() {
 	ticker := time.NewTicker(500 * time.Millisecond) // Generate a new tick every 250ms
 	defer ticker.Stop()
 
+LOOP:
 	for range ticker.C {
+		select {
+		case <-ctx.Done():
+			break LOOP
+		default:
+		}
+
 		// Pick a random instrument to update
 		inst := instruments[rand.Intn(len(instruments))]
 
